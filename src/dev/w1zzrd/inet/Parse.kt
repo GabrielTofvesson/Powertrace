@@ -1,7 +1,6 @@
 package dev.w1zzrd.inet
 
 private val traceHead = "traceroute to (.*?) \\(((?:(?:[0-9]{1,3}\\.){3}[0-9]{1,3})|(?:[0-9A-Fa-f]{4}:){4}(?:(?:(?:[0-9A-Fa-f]{4}:){3}[0-9A-Fa-f]{4})|:))\\), (.*?) hops max, (.*?) byte packets".toRegex()
-//private val traceLine = " *([0-9]+) {2}(?:(?: ?(.*?) \\((.*?)\\) {2}(.*?) ms ?)|(\\*) ?)(?:(?:(?: ?(.*?) \\((.*?)\\))? {2}(.*?) ms ?)|(\\*) ?)?(?:(?:(?: ?(.*?) \\((.*?)\\))? {2}(.*?) ms)|(\\*))?".toRegex()
 private val traceLine = " *([0-9]+) {2}(?:(?:(\\*) ?)|(?: ?(.*?) \\((.*?)\\) {2}(.*?) ms ?))(?:(?: ?([0-9]+\\.[0-9]+) ms)|(?:(\\*) ?)|(?:(?: ?(.*?) \\((.*?)\\))? {2}([0-9]+\\.[0-9]+) ms ?))?(?:(?: ?([0-9]+\\.[0-9]+) ms)|(\\*)|(?:(?: ?(.*?) \\((.*?)\\))? {2}(.*?) ms))?".toRegex()
 private val ipv4 = "(?:[0-9]{1,3}\\.){3}[0-9]{1,3}".toRegex()
 private val ipv6 = "(?:[0-9A-Fa-f]{4}:){4}(?:(?:(?:[0-9A-Fa-f]{4}:){3}[0-9A-Fa-f]{4})|:)".toRegex()
@@ -72,12 +71,12 @@ fun parseLine(line: String): TraceLine? {
 
     data class MatchResult(val adr: String?, val ip: String?, val t: String?, val f: String?) {
         fun toTraceEntry(previousAdr: String?, previousIP: String?) =
-            if(f != null || (adr == null && previousAdr == null) || (ip == null && previousIP == null))
+            if(f != null || (adr == null && previousAdr == null) || (ip == null && previousIP == null) || (adr == null && ip == null && t == null))
                 FailEntry
             else {
-                adr ?: previousAdr ?: println("No adr")
-                ip ?: previousIP ?: println("No ip")
-                t ?: println("No t")
+                adr ?: previousAdr ?: println("No adr ($ip) ($t)")
+                ip ?: previousIP ?: println("No ip ($adr) ($t)")
+                t ?: println("No t ($adr) ($ip)")
                 SuccessEntry(adr ?: previousAdr!!, IP.parseIP(ip ?: previousIP!!)!!, t!!.toFloat())
             }
     }
